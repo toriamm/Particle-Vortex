@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<style>
+
+    body
+    {
+        background-color: black;
+        padding: 0;
+        margin: 0;
+        overflow: auto;
+    }
+
+    h1
+    {
+        text-align: center;
+        color: #10a010;
+        font: 48px "Agency FB", sans-serif;
+    }
+
+    h3
+    {
+        text-align: center;
+        color: #5faf51;
+        font: 40px "Agency FB", sans-serif;
+    }
+
+    h4
+    {
+        text-align: center;
+        color: #5faf63;
+        font: 20px "Agency FB", sans-serif;
+    }
+
+    p
+    {
+        width: 50%;
+    }
+
+    /* The container */
+    .container {
+        display: ruby;
+        position: relative;
+        padding-left: 35px;
+        margin-bottom: 1px;
+        cursor: pointer;
+        font-size: 24px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Hide the browser's default checkbox */
+    .container input {
+        position: center;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    /* Create a custom checkbox */
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 25px;
+        width: 25px;
+        background-color: #5faf51;
+    }
+
+    /* On mouse-over, add a grey background color */
+    .container:hover input ~ .checkmark {
+        background-color: #5faf63;
+    }
+
+    /* When the checkbox is checked, add a blue background */
+    .container input:checked ~ .checkmark {
+        background-color: #10a010;
+    }
+
+    /* Create the checkmark/indicator (hidden when not checked) */
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    /* Show the checkmark when checked */
+    .container input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    /* Style the checkmark/indicator */
+    .container .checkmark:after {
+        left: 9px;
+        top: 5px;
+        width: 5px;
+        height: 10px;
+        border: solid #ffffff;
+        border-width: 0 3px 3px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
+    }
+
+</style>
+<head>
+    <!--Replace the title with your name and something that tells
+    the viewer what the page is about.-->
+    <title>Particle Vortex by Victoria Martinez</title>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+    <script src="p5.js"></script>
+</head>
+<body>
+<h1>Particle Vortex - Sea Swirl</h1>
+<h3>
+    Move your mouse around and click to see what will happen!<br>
+    <label class="container">X Offset
+        <input type="checkbox" id="xOffset" onclick="createParticles()">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Y Offset
+        <input type="checkbox" id="yOffset" onclick="createParticles()">
+        <span class="checkmark"></span>
+    </label>
+</h3>
+<canvas id="myCanvas"></canvas>
+<script>
+
+    //DON'T FORGET TO ADD THANKS AND CREDIT!
+    var canvasWidth = window.innerWidth;
+    var canvasHeight = window.innerHeight;
+
+    var radiusMain = 160;
+    var radiusScale = 1;
+    var radiusScaleMinimum = 1;
+    var radiusScaleMaximum = 80;
+
+    var quantity = 500;
+
+    var canvas;
+    var context;
+    var particles;
+
+    var mouseX = canvasWidth/2;
+    var mouseY = canvasHeight/2;
+    var mouseIsDown = false;
+
+    var xOffset = 10;
+    var yOffset = 10;
+
+    function initial()
+    {
+        canvas = document.getElementById('myCanvas');
+
+        if (canvas && canvas.getContext)
+        {
+            context = canvas.getContext('2d');
+
+            //Register event listeners
+            window.addEventListener('mousemove', documentMouseMoveHandler, false);
+            canvas.addEventListener('mousedown', documentMouseDownHandler, false);
+            document.addEventListener('mouseup', documentMouseUpHandler, false);
+            document.addEventListener('touchstart', documentTouchStartHandler, false);
+            document.addEventListener('touchmove', documentTouchMoveHandler, false);
+            window.addEventListener('resize', windowResizeHandler, false);
+
+            createParticles();
+
+            windowResizeHandler();
+
+            setInterval(loop, 100/8);
+        }
+    }
+
+    //function changeX()
+    //{
+    //    console.log("Do I work for the x?");
+
+    //    if(document.getElementById("xOffset").checked)
+    //    {
+    //        xOffset = -10;
+    //        console.log("xOffset = " + xOffset);
+    //    }
+    //}
+
+    //function changeY()
+    //{
+    //    console.log("Do I work for the y?");
+
+    //    if(document.getElementById("yOffset").checked)
+    //    {
+    //        yOffset = -10;
+    //        console.log("yOffset = " + yOffset);
+    //    }
+    //}
+
+    function createParticles()
+    {
+        particles = [];
+
+        for (var i = 0; i < quantity; i++)
+        {
+            if(document.getElementById("xOffset").checked)
+            {
+                xOffset = -10;
+                console.log("xOffset = " + xOffset);
+            }
+            else xOffset = 10;
+
+            if(document.getElementById("yOffset").checked)
+            {
+                yOffset = -10;
+                console.log("yOffset = " + yOffset);
+            }
+            else yOffset = 10;
+
+            var particle =
+                {
+                    size: 1,
+                    position: {x: mouseX, y: mouseY},
+                    offset: {x: xOffset, y: yOffset},
+                    shift: {x: mouseX, y: mouseY-40},
+                    speed: 0.04+Math.random()*0.04,
+                    targetSize: 1,
+                    fillColor: '#' + (Math.random() * 0x804040 + 0xafaaaa | 100).toString(24),
+                    orbit: radiusMain*0.4 + (radiusMain*0.95 * Math.random())
+                };
+
+            particles.push(particle);
+        }
+    }
+
+    function documentMouseMoveHandler(event)
+    {
+        mouseX = event.clientX - (window.innerWidth - canvasWidth)/2;
+        mouseY = event.clientY - (window.innerHeight - canvasHeight)/2;
+    }
+
+    function documentMouseDownHandler(event)
+    {
+        if ((mouseY < context.canvas) && (mouseY > window))
+        {
+            mouseIsDown = false;
+        }
+        else mouseIsDown = true;
+    }
+
+    function documentMouseUpHandler(event)
+    {
+        mouseIsDown = false;
+    }
+
+    function documentTouchStartHandler(event)
+    {
+        if(event.touches.length === 1)
+        {
+            event.preventDefault();
+
+            mouseX = event.touches[0].pageX - (window.innerWidth - canvasWidth)/2;
+            mouseY = event.touches[0].pageY - (window.innerHeight - canvasHeight)/2;
+        }
+    }
+
+    function documentTouchMoveHandler(event)
+    {
+        if(event.touches.length === 1) {
+            event.preventDefault();
+
+            mouseX = event.touches[0].pageX - (window.innerWidth - canvasWidth)/2;
+            mouseY = event.touches[0].pageY - (window.innerHeight - canvasHeight)/2;
+        }
+    }
+
+    function windowResizeHandler()
+    {
+        canvasWidth = window.innerWidth;
+        canvasHeight = window.innerHeight;
+
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+    }
+
+    function loop()
+    {
+
+        if( mouseIsDown )
+        {
+            radiusScale += (radiusScaleMaximum - radiusScale)*(0.2);
+        }
+        else
+        {
+            radiusScale -= (radiusScale - radiusScaleMinimum)*(0.2);
+        }
+
+        radiusScale = Math.min(radiusScale, radiusScaleMaximum);
+
+        context.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+
+        for (var i = 0, len = particles.length; i < len; i++)
+        {
+            var particle = particles[i];
+
+            var loop = {x: particle.position.x, y: particle.position.y};
+
+            //Rotation
+            particle.offset.x += particle.speed;
+            particle.offset.y += particle.speed;
+
+            //Follow mouse with some lag
+            particle.shift.x += (mouseX - particle.shift.x) * (particle.speed);
+            particle.shift.y += (mouseY - particle.shift.y) * (particle.speed);
+
+            //Apply position
+            particle.position.x = particle.shift.x + Math.cos(i + particle.offset.x) * (particle.orbit*radiusScale);
+            particle.position.y = particle.shift.y + Math.sin(i + particle.offset.y) * (particle.orbit*radiusScale);
+
+            //Limit to screen bounds
+            particle.position.x = Math.max(Math.min(particle.position.x, canvasWidth), 0);
+            particle.position.y = Math.max(Math.min(particle.position.y, canvasHeight), 0);
+
+            particle.size += (particle.targetSize - particle.size)/2;
+
+            if(Math.round(particle.size) === Math.round(particle.targetSize))
+            {
+                particle.targetSize = 1 + Math.random() * 7;
+            }
+
+            context.beginPath();
+            context.fillStyle = particle.fillColor;
+            context.strokeStyle = particle.fillColor;
+            context.lineWidth = particle.size;
+            context.moveTo(loop.x, loop.y);
+            context.lineTo(particle.position.x, particle.position.y);
+            context.stroke();
+            context.arc(particle.position.x, particle.position.y, particle.size/2, 0, Math.PI*2, true);
+            context.fill();
+        }
+    }
+
+    window.onload = initial;
+
+</script>
+
+<h4>By: <a href="https://www.unm.edu/~toriamm/home.html" target="_blank">Victoria Martinez</a>
+    <h4>You can also check out the <a href="https://www.unm.edu/~toriamm/Unicorn%20Bliss.html" target="_blank">Unicorn Bliss version</a>!</h4>
+    <h4>Special thanks to Hakim El Hattab for the <a href="https://codepen.io/hakimel/pen/KanIi" target="_blank">inspiration on CodePen</a>!</h4>
+
+</body>
+</html>

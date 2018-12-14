@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<style>
+
+    body
+    {
+        background-color: white;
+        padding: 0;
+        margin: 0;
+        overflow: auto;
+    }
+
+    h1
+    {
+        text-align: center;
+        color: hotpink;
+        font: 48px "Agency FB", sans-serif;
+    }
+
+    h3
+    {
+        text-align: center;
+        color: #ff91c9;
+        font: 40px "Agency FB", sans-serif;
+    }
+
+    h4
+    {
+        color: #ff91c9;
+        font: 32px "Agency FB", sans-serif;
+    }
+
+    div button
+    {
+        border: none;
+        background-color: initial;
+        padding: 4px 8px;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    /* Unicorn Bliss */
+    div .unicorn
+    {
+        color: hotpink;
+    }
+
+    div .unicorn:hover
+    {
+        background: #ff91c9;
+    }
+
+    div .unicorn, .active
+    {
+        background: #ff91c9;
+    }
+
+    .slidecontainer
+    {
+        width: 60%;
+        justify-items: inherit;
+    }
+
+    .slider
+    {
+        -webkit-appearance: none;
+        width: 80%;
+        height: 15px;
+        border-radius: 50px;
+        background: #ff91c9;
+        outline: none;
+        opacity: 0.7;
+        -webkit-transition: .2s;
+        transition: opacity .2s;
+    }
+
+    .slider:hover
+    {
+        opacity: 10;
+    }
+
+    .slider::-webkit-slider-thumb
+    {
+        -webkit-appearance: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #ff33a3;
+        cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb
+    {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #ff33a3;
+        cursor: pointer;
+    }
+
+    p
+    {
+        width: 50%;
+    }
+
+</style>
+<head>
+    <!--Replace the title with your name and something that tells
+    the viewer what the page is about.-->
+    <title>Particle Vortex by Victoria Martinez</title>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+    <script src="p5.js"></script>
+</head>
+<body>
+<h1>Particle Vortex Unicorn Bliss</h1>
+<h3>Move your mouse around and click to see what will happen!
+    <div class="slidecontainer">
+        <p>Orbit Radius: <span id="number"></span></p><input type="range" min="10" max="500" value="250" class="slider" id="radiusScale">
+    </div>
+</h3>
+
+<canvas id="myCanvas"></canvas>
+<script>
+
+    //DON'T FORGET TO ADD THANKS AND CREDIT!
+
+
+    var canvasWidth = window.innerWidth;
+    var canvasHeight = window.innerHeight;
+
+    var slider = document.getElementById("radiusScale");
+
+    var output = document.getElementById("number");
+
+    output.innerHTML = slider.value;
+
+    slider.oninput = function()
+    {
+        output.innerHTML = this.value;
+    }
+
+    var radiusMain = slider.value;
+    var radiusScale = 1;
+    var radiusScaleMinimum = 1;
+    var radiusScaleMaximum = 80;
+
+    var quantity = 500;
+
+    var canvas;
+    var context;
+    var particles;
+
+    var mouseX = canvasWidth/2;
+    var mouseY = canvasHeight/2;
+    var mouseIsDown = false;
+    function initial()
+    {
+        canvas = document.getElementById('myCanvas');
+
+        if (canvas && canvas.getContext)
+        {
+            context = canvas.getContext('2d');
+
+            //Register event listeners
+            window.addEventListener('mousemove', documentMouseMoveHandler, false);
+            window.addEventListener('mousedown', documentMouseDownHandler, false);
+            document.addEventListener('mouseup', documentMouseUpHandler, false);
+            document.addEventListener('touchstart', documentTouchStartHandler, false);
+            document.addEventListener('touchmove', documentTouchMoveHandler, false);
+            window.addEventListener('resize', windowResizeHandler, false);
+
+            createParticles();
+
+            windowResizeHandler();
+
+            setInterval(loop, 100/8);
+        }
+    }
+
+    function createParticles()
+    {
+        particles = [];
+
+        for (var i = 0; i < quantity; i++)
+        {
+            var particle =
+            {
+                size: 1,
+                position: {x: mouseX, y: mouseY},
+                offset: {x: 10, y: 10},
+                shift: {x: mouseX, y: mouseY},
+                speed: 0.04+Math.random()*0.04,
+                targetSize: 1,
+                fillColor: '#' + (Math.random() * 0x804040 + 0xafaaaa | 100).toString(16),
+                orbit: radiusMain*0.4 + (radiusMain*0.95 * Math.random())
+            };
+
+            particles.push(particle);
+        }
+    }
+
+    function documentMouseMoveHandler(event)
+    {
+        mouseX = event.clientX - (window.innerWidth - canvasWidth)/2;
+        mouseY = event.clientY - (window.innerHeight - canvasHeight)/2;
+    }
+
+    function documentMouseDownHandler(event)
+    {
+        if ((mouseY < context.canvas) && (mouseY > window))
+        {
+            mouseIsDown = false;
+        }
+        else mouseIsDown = true;
+    }
+
+    function documentMouseUpHandler(event)
+    {
+        mouseIsDown = false;
+    }
+
+    function documentTouchStartHandler(event)
+    {
+        if(event.touches.length === 1)
+        {
+            event.preventDefault();
+
+            mouseX = event.touches[0].pageX - (window.innerWidth - canvasWidth)/2;
+            mouseY = event.touches[0].pageY - (window.innerHeight - canvasHeight)/2;
+        }
+    }
+
+    function documentTouchMoveHandler(event)
+    {
+        if(event.touches.length === 1) {
+            event.preventDefault();
+
+            mouseX = event.touches[0].pageX - (window.innerWidth - canvasWidth)/2;
+            mouseY = event.touches[0].pageY - (window.innerHeight - canvasHeight)/2;
+        }
+    }
+
+    function windowResizeHandler()
+    {
+        canvasWidth = window.innerWidth;
+        canvasHeight = window.innerHeight;
+
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+    }
+
+    function loop()
+    {
+
+        if( mouseIsDown )
+        {
+            radiusScale += (radiusScaleMaximum - radiusScale)*(0.02);
+        }
+        else
+        {
+            radiusScale -= (radiusScale - radiusScaleMinimum)*(0.02);
+        }
+
+        radiusScale = Math.min(radiusScale, radiusScaleMaximum);
+
+        context.fillStyle = 'rgba(255,255,255,0.04)';
+        context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+
+        for (var i = 0, len = particles.length; i < len; i++)
+        {
+            var particle = particles[i];
+
+            var loop = {x: particle.position.x, y: particle.position.y};
+
+            //Rotation
+            particle.offset.x += particle.speed;
+            particle.offset.y += particle.speed;
+
+            //Follow mouse with some lag
+            particle.shift.x += (mouseX - particle.shift.x) * (particle.speed);
+            particle.shift.y += (mouseY - particle.shift.y) * (particle.speed);
+
+            //Apply position
+            particle.position.x = particle.shift.x + Math.cos(i + particle.offset.x) * (particle.orbit*radiusScale);
+            particle.position.y = particle.shift.y + Math.sin(i + particle.offset.y) * (particle.orbit*radiusScale);
+
+            //Limit to screen bounds
+            particle.position.x = Math.max(Math.min(particle.position.x, canvasWidth), 0);
+            particle.position.y = Math.max(Math.min(particle.position.y, canvasHeight), 0);
+
+            particle.size += (particle.targetSize - particle.size)/2;
+
+            if(Math.round(particle.size) === Math.round(particle.targetSize))
+            {
+                particle.targetSize = 1 + Math.random() * 7;
+            }
+
+            context.beginPath();
+            context.fillStyle = particle.fillColor;
+            context.strokeStyle = particle.fillColor;
+            context.lineWidth = particle.size;
+            context.moveTo(loop.x, loop.y);
+            context.lineTo(particle.position.x, particle.position.y);
+            context.stroke();
+            context.arc(particle.position.x, particle.position.y, particle.size/2, 0, Math.PI*2, true);
+            context.fill();
+        }
+    }
+
+    window.onload = initial;
+
+</script>
+</body>
+</html>
